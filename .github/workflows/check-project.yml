@@ -1,0 +1,57 @@
+name: AI Workflow Check
+
+on:
+  # main 브랜치에 push될 때마다 이 workflow를 실행합니다.
+  push:
+    branches:
+      - main
+
+jobs:
+  # 프로젝트 파일을 검사하는 작업입니다.
+  check-project:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 저장소의 코드를 러너 환경으로 가져옵니다.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 실행 로그에 안내 문구를 출력합니다.
+      - name: Print messages
+        run: |
+          echo "코드 수정이 일어났습니다."
+          echo "AI Workflow 자동화가 실행되었습니다."
+          echo "자동 검사 완료"
+
+      # 현재 프로젝트의 파일 목록을 출력합니다.
+      - name: List project files
+        run: |
+          echo "현재 프로젝트 파일 목록:"
+          find . -maxdepth 2 -type f | sort
+
+      # 필수 파일이 모두 존재하는지 확인합니다.
+      - name: Check required files
+        shell: bash
+        run: |
+          required_files=(
+            "index.html"
+            "script.js"
+            "style.css"
+            "README.md"
+          )
+
+          missing_files=()
+
+          for file in "${required_files[@]}"; do
+            if [ ! -f "$file" ]; then
+              missing_files+=("$file")
+            fi
+          done
+
+          if [ ${#missing_files[@]} -ne 0 ]; then
+            echo "다음 필수 파일이 없습니다:"
+            printf ' - %s\n' "${missing_files[@]}"
+            exit 1
+          fi
+
+          echo "모든 필수 파일이 존재합니다."
